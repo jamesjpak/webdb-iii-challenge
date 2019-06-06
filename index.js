@@ -14,20 +14,103 @@ server.get('/api/cohorts', async (req, res) => {
     try {
       const cohorts = await db('cohorts'); // all the records from the table
       res.status(200).json(cohorts);
-    } catch (error) {
+    } 
+    catch (error) {
       res.status(500).json(error);
     }
   });
+
+server.get('/api/cohorts/:id', async (req, res) => {
+    try {
+        const cohort = await db('cohorts')
+        .where({ id: req.params.id })
+        .first()
+
+        res.status(200).json(cohort)
+    }
+    catch (error) {
+        res.status(500).json(error)
+    }
+})
+
+server.get('/api/cohorts/:id/students', async (req, res) => {
+    try {
+        const students = await db('students')
+        .where({ cohort_id: req.params.id})
+        .first()
+
+        res.status(200).json(students)
+    } 
+    catch (error) {
+        res.status(500).json(error)
+    }
+})
+
+  server.post('/api/cohorts', async (req, res) => {
+    try {
+        const [id] = await db('cohorts').insert(req.body);
+
+        const cohort = await db('cohorts')
+        .where({ id })
+        .first()
+
+        res.status(201).json(cohort)
+    } 
+    catch (error) {
+        const message = errors[error.errno] || "ERROR ERROR ERROR!!!";
+        res.status(500).json({ message, error })
+    }
+  })
+
+  server.put('/api/cohorts/:id', async (req, res) => {
+      try {
+          const count = await db('cohorts')
+          .where({ id: req.params.id })
+          .update(req.body);
+
+          if (count > 0) {
+              const cohort = await db('cohorts')
+              .where({ id: req.params.id })
+              .first();
+
+              res.status(200).json(cohort);
+          } else {
+              res.status(404).json({ message: 'Not found!'})
+          }
+      } catch (error) {
+        res.status(500).json(error)
+      }
+  })
+
+  server.delete('/api/cohorts/:id', async (req, res) => {
+    try {
+        const count = await db('cohorts')
+        .where({ id: req.params.id })
+        .del()
+
+        if (count > 0) {
+            res.status(204).json({ message: 'Deleted!' });
+        } else {
+            res.status(404).json({ message: 'Cohort not found!' })
+        }
+    } 
+    catch (error) {
+        res.status(500).json(error)
+    }
+  })
 
   server.get('/api/students', async (req, res) => {
     // get the roles from the database
     try {
       const students = await db('students'); // all the records from the table
       res.status(200).json(students);
-    } catch (error) {
+    } 
+    catch (error) {
       res.status(500).json(error);
     }
   });
+
+  
 
   
 const port = process.env.PORT || 6000;
